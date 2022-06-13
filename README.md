@@ -1,5 +1,4 @@
 # Official Absurdia Bindings for Python
-=====================================
 
 A Python library for Absurdia's API.
 
@@ -32,23 +31,23 @@ download the credential file. Put the credential file in the same directory as y
 Once done, you can use the package like this:
 
 ```python
-    from absurdia import markets
-    import absurdia
+from absurdia import markets
+import absurdia
 
-    # Get all the supported symbols
-    symbols = markets.symbols()
+# Get all the supported symbols
+symbols = markets.symbols()
 
-    # Get the price of a symbol
-    price = markets.price("BTC.USDT-SPOT-BIN")
+# Get the price of a symbol
+price = markets.price("BTC.USDT-SPOT-BIN")
 
-    # Get the latest 100 trades of a symbol
-    trades = markets.trades("BTC.USDT-SPOT-BIN")
+# Get the latest 100 trades of a symbol
+trades = markets.trades("BTC.USDT-SPOT-BIN")
 
-    # Get the latest limit order book snapshot of a symbol
-    orderbook = markets.orderbook("BTC.USDT-SPOT-BIN")
+# Get the latest limit order book snapshot of a symbol
+orderbook = markets.orderbook("BTC.USDT-SPOT-BIN")
 
-    # Get your account
-    account = absurdia.Account.current()
+# Get your account
+account = absurdia.Account.current()
 ```
 
 #### Change the path of the credentials file
@@ -56,9 +55,9 @@ Once done, you can use the package like this:
 You can change the path of the file with:
 
 ```python
-    import absurdia
+import absurdia
 
-    absurdia.agent_filepath = "/path/to/file/absurdia-agent.env"
+absurdia.agent_filepath = "/path/to/file/absurdia-agent.env"
 ```
 
 #### Use your credentials directly
@@ -66,9 +65,9 @@ You can change the path of the file with:
 Add the credentials the way you prefer by changing the global variables:
 
 ```python
-    import absurdia
+import absurdia
 
-    absurdia.agent_id = "<ID>"
-    absurdia.agent_token = "<Agent Token>"
-    absurdia.agent_signature_key = "<Signature Key>"
+absurdia.agent_id = "<ID>"
+absurdia.agent_token = "<Agent Token>"
+absurdia.agent_signature_key = "<Signature Key>"
 ```
