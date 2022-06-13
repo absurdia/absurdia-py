@@ -1,4 +1,5 @@
 # Official Absurdia Bindings for Python
+![PyPI](https://img.shields.io/pypi/v/absurdia?style=flat-square)
 
 A Python library for Absurdia's API.
 

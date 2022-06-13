@@ -20,6 +20,7 @@ setup(
     version=version_contents["VERSION"],
     description="Python bindings for the Absurdia API",
     long_description=long_description,
+    long_description_content_type='text/markdown',
     author="Absurdia",
     author_email="support@absurdia.eu",
     url="https://github.com/absurdia/absurdia-py",
