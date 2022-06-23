@@ -28,8 +28,9 @@ setup(
     keywords="absurdia api trading",
     packages=find_packages(exclude=["tests", "tests.*"]),
     package_data={"absurdia": ["data/ca-certificates.crt"]},
-    zip_safe=False,
+    zip_safe=True,
     install_requires=[
+        'brotlipy',
         'httpx[http2] >= 0.21.2; python_version >= "3.4"',
     ],
     python_requires=">=3.4, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*",
