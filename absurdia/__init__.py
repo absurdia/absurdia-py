@@ -9,9 +9,9 @@ agent_filepath = "absurdia-agent.env"
 agent_id = None
 agent_token = None
 agent_signature_key = None
-fund_id = None
-api_base = "https://api.absurdia.eu"
-download_api_base = "https://data.absurdia.eu"
+default_fund = None
+api_base = "https://api.absurdia.markets"
+download_api_base = "https://data.absurdia.markets"
 api_version = "v1"
 verify_ssl_certs = True
 proxy = None
@@ -29,6 +29,9 @@ log = None
 # API resources
 from absurdia.api_resources import *  # noqa
 from absurdia.markets import *  # noqa
+from absurdia.version import VERSION
+
+__version__ = VERSION
 
 # Takes a name and optional version and plugin URL.
 def set_app_info(name, partner_id=None, url=None, version=None):

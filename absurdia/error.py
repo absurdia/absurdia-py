@@ -18,7 +18,7 @@ class AbsurdiaError(Exception):
             except BaseException:
                 http_body = (
                     "<Could not decode body as utf-8. "
-                    "Please report to support@absurdia.eu>"
+                    "Please report to support@absurdia.markets>"
                 )
 
         self._message = message

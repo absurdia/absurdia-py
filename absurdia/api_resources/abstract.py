@@ -12,7 +12,7 @@ class APIResource(AbsurdiaObject):
     def refresh(self):
         id = self.get("id")
         if isinstance(id, str):
-            self.refresh_from(self.request("get", self.class_url(), params={"id": id}))
+            self.refresh_from(self.request("get", self.class_url() + "/{id}".format(id=id)))
         return self
 
     @classmethod
@@ -68,12 +68,39 @@ class APIResource(AbsurdiaObject):
         headers = util.populate_headers(idempotency_key)
         response = requestor.request_stream(method_, url_, params, headers)
         return response
+    
+    # The `method_` and `url_` arguments are suffixed with an underscore to
+    # avoid conflicting with actual request parameters in `params`.
+    def _request(
+        self,
+        method_,
+        url_,
+        api_key=None,
+        idempotency_key=None,
+        absurdia_version=None,
+        absurdia_account=None,
+        headers=None,
+        params=None,
+    ):
+        obj = AbsurdiaObject.request(
+            self,
+            method_,
+            url_,
+            params,
+            headers
+        )
+
+        if type(self) is type(obj):
+            self.refresh_from(obj)
+            return self
+        else:
+            return obj
 
 
 def custom_method(name, http_verb, http_path=None, is_streaming=False):
-    if http_verb not in ["get", "post", "delete", "patch"]:
+    if http_verb not in ["get", "post", "delete", "patch", "put"]:
         raise ValueError(
-            "Invalid http_verb: %s. Must be one of 'get', 'post', 'patch' or 'delete'"
+            "Invalid http_verb: %s. Must be one of 'get', 'post', 'patch', 'put' or 'delete'"
             % http_verb
         )
     if http_path is None:
@@ -127,29 +154,6 @@ def custom_method(name, http_verb, http_path=None, is_streaming=False):
         return cls
 
     return wrapper
-
-
-class CreateableAPIResource(APIResource):
-    @classmethod
-    def create(
-        cls,
-        agent_token=None,
-        idempotency_key=None,
-        absurdia_version=None,
-        absurdia_account=None,
-        **params
-    ):
-        requestor = api_requestor.APIRequestor(
-            agent_token, api_version=absurdia_version, account=absurdia_account
-        )
-        url = cls.class_url()
-        headers = util.populate_headers(idempotency_key)
-        response = requestor.request("post", url, params, headers)
-
-        return util.convert_to_absurdia_object(
-            response, agent_token, absurdia_version, absurdia_account
-        )
-
 
 class ListableAPIResource(APIResource):
     @classmethod

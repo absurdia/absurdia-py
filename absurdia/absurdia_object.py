@@ -302,7 +302,7 @@ class AbsurdiaObject(dict):
         }
 
     @property
-    def absurdia_id(self):
+    def id(self):
         return self.id
 
     def serialize(self, previous):

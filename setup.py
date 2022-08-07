@@ -22,7 +22,7 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     author="Absurdia",
-    author_email="support@absurdia.eu",
+    author_email="support@absurdia.markets",
     url="https://github.com/absurdia/absurdia-py",
     license="MIT",
     keywords="absurdia api trading",

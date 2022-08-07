@@ -6,6 +6,8 @@ import os
 import re
 import datetime
 from urllib.parse import quote_plus
+import time, json, base64
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
 try:
     pd = __import__("pandas")
@@ -30,18 +32,233 @@ __all__ = [
 SUPPORTED_ASSETS = [
     "BTC",
     "ETH",
-    "BUSD",
     "USDT",
     "USDC",
-    "USD",
+    "BUSD",
+    "SOL",
+    "ADA",
+    "XRP",
+    "LTC",
+    "BNB",
+    "DOGE",
+    "DAI",
+    "DOT",
+    "TRX",
+    "SHIB",
+    "LEO",
+    "AVAX",
+    "WBTC",
+    "MATIC",
+    "UNI",
+    "FTT",
+    "CRO",
+    "LINK",
+    "XLM",
+    "ATOM",
+    "NEAR",
+    "XMR",
+    "ALGO",
+    "ETC",
+    "BCH",
+    "FLOW",
+    "VET",
+    "MANA",
+    "SAND",
+    "APE",
+    "XTZ",
+    "ICP",
+    "HBAR",
+    "TUSD",
+    "EGLD",
+    "THETA",
+    "AXS",
+    "HNT",
+    "BSV",
+    "USDP",
+    "EOS",
+    "MKR",
+    "KCS",
+    "AAVE",
+    "ZEC",
+    "BTT",
+    "USDN",
+    "XEC",
+    "OKB",
+    "MIOTA",
+    "QNT",
+    "HT",
+    "KLAY",
+    "RUNE",
+    "GRT",
+    "BAT",
+    "FTM",
+    "PAXG",
+    "CHZ",
+    "NEO",
+    "WAVES",
+    "LRC",
+    "GMT",
+    "STX",
+    "ZIL",
+    "CRV",
+    "ENJ",
+    "DASH",
+    "CAKE",
+    "FEI",
+    "KSM",
+    "CELO",
+    "AMP",
+    "KAVA",
+    "AR",
+    "GALA",
+    "MINA",
+    "HOT",
+    "XEM",
+    "COMP",
+    "1INCH",
+    "NEXO",
+    "CVX",
+    "CDR",
+    "GT",
+    "XDC",
+    "SNX",
+    "GNO",
+    "QTUM",
+    "XYM",
+    "KDA",
+    "BORA",
+    "ZRX",
+    "BTG",
+    "ICX",
+    "OMG",
+    "JST",
+    "RVN",
+    "IOTX",
+    "GLM",
+    "AUDIO",
+    "ROSE",
+    "ANKR",
+    "CEL",
+    "TWT",
+    "BAL",
+    "ONT",
+    "NIO",
+    "EUROC",
     "EUR",
+    "USD",
+    "CHF",
     "GBP",
-    "CHF"
+    "CAD",
+    "AUD",
+    "NZD",
+    "JPY",
+    "CNY",
+    "KRW",
+    "TWD",
+    "HKD",
+    "SGD",
+    "THB",
+    "IDR",
+    "INR",
+    "MYR",
+    "PHP",
+    "VND",
+    "ZAR",
+    "SEK",
+    "NOK",
+    "DKK",
+    "ISK",
+    "PLN",
+    "RUB",
+    "HRK",
+    "HUF",
+    "CZK",
+    "BGN",
+    "TRY",
+    "EEK",
+    "BAM",
+    "AZN",
+    "AMD",
+    "ALL",
+    "RON",
+    "RSD",
+    "UAH",
+    "GEL",
+    "ARS",
+    "BRL",
+    "CLP",
+    "COP",
+    "MXN",
+    "PEN",
+    "BOB",
+    "PYG",
+    "UYU",
+    "DZD",
+    "EGP",
+    "MAD",
+    "LBP",
+    "TND",
+    "KWD",
+    "AED",
+    "SDG",
+    "NGN",
+    "XOF",
+    "MRU",
+    "LYD",
+    "LRD",
+    "KES",
+    "AOA",
+    "XCD",
+    "BDT",
+    "BZD",
+    "BND",
+    "KYD",
+    "XAF",
+    "DOP",
+    'ETB',
+    "GMD",
+    "GHS",
+    "GTQ",
+    "GNF",
+    "HNL",
+    "IQD",
+    "ILS",
+    "KZT",
+    "LAK",
+    "MWK",
+    "MGA",
+    "MNT",
+    "MZN",
+    "MMK",
+    "PKR",
+    "QAR",
+    "RWF",
+    "SCR",
+    "SLL",
+    "UGX",
+    "ANG",
 ]
 
-SUPPORTED_MARKET_TYPES = ["SPOT"]
+SUPPORTED_MARKET_TYPES = ["SPOT", "FUTURE"]
 
-SUPPORTED_VENUES = ["BIN", "FTX", "BPD"]
+SUPPORTED_VENUES = ["BIN", "FTX", "BPD", "OKX", "CBP", "KUC", "BYB", "HUG", "KRK", "B4Y", "BSP", "GIO"]
+
+VENUE_MAP = {
+    "binance": "BIN",
+    "ftx": "FTX",
+    "okx": "OKX",
+    "coinbase_pro": "CBP",
+    "kucoin": "KUC",
+    "bybit": "BYB",
+    "huobi_global": "HUG",
+    "kraken": "KRK",
+    "bit4you": "B4Y",
+    "bitpanda": "BPD",
+    "bitstamp": "BSP",
+    "gate_io": "GIO"
+}
+
+PRIVATE_KEY = None
 
 def current_timestamp(granularity="us"):
     if granularity == "us":
@@ -126,6 +343,22 @@ def load_agent():
         if idx > -1 and absurdia.agent_id is None:
             idx = idx + (len("ABSURDIA_AGENT_ID") + 1)
             absurdia.agent_id = file[idx:file.find("\n", idx)]
+
+dump = lambda payload: json.dumps(payload, separators=(',', ':')) if len(payload) else ""
+
+def sign(payload: dict = {}) -> str:
+    global PRIVATE_KEY
+    if PRIVATE_KEY is None:
+        if absurdia.agent_signature_key:
+            PRIVATE_KEY = Ed25519PrivateKey.from_private_bytes(base64.b64decode(absurdia.agent_signature_key))
+        else:
+            raise RuntimeError("No signature key provided. A signature key is required for endpoints that require signatures.")
+    timestamp = int(time.time_ns() / 1000)
+    payload_bytes = f"{timestamp}.{dump(payload)}".encode()
+    print(payload_bytes)
+    sig_raw = PRIVATE_KEY.sign(payload_bytes)
+    signature = base64.urlsafe_b64encode(sig_raw).replace(b'=', b'').decode() # URL safe, no padding
+    return f"t={timestamp},s={signature}"
 
 def convert_to_absurdia_object(
     resp, agent_token=None, absurdia_version=None, absurdia_account=None, klass_name=None
@@ -230,10 +463,10 @@ class class_method_variant(object):
 
         return _wrapper
 
-def validate_symbol(symbol: str) -> bool:
+def validate_absurdia_symbol(symbol: str) -> bool:
     symbol = symbol.upper()
-    parts = symbol.split("-")
-    if len(parts) < 2:
+    parts = symbol.split(":")
+    if len(parts) != 2:
         return False
     elif len(parts) == 2:
         venue = None
@@ -271,4 +504,7 @@ def compose_symbol(base: str, quote: str, market_type: str, venue: str) -> str:
         return ""
     if not venue in SUPPORTED_VENUES:
         return ""
-    return "{base}.{quote}-{market_type}-{venue}".format(base, quote, market_type, venue)
+    if market_type == "SPOT":
+        return "{base}.{quote}:{venue}".format(base, quote, venue)
+    elif market_type == "FUTURE": # only perpetual futures supported at the moment
+        return "{base}.{quote}:{venue}.PERP".format(base, quote, venue)

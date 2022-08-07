@@ -221,7 +221,7 @@ class APIRequestor(object):
             return auth_error.SystemError(*args)
         return None
 
-    def request_headers(self, agent_token, method):
+    def request_headers(self, agent_token, method, payload=None):
         user_agent = "Absurdia/v1 PythonBindings/%s" % (version.VERSION,)
         if absurdia.app_info:
             user_agent += " " + self.format_app_info(absurdia.app_info)
@@ -253,8 +253,11 @@ class APIRequestor(object):
             "Accept-Encoding": "br,gzip",
         }
 
-        if method == "post":
+        if method == "post" or method == "patch":
             headers.setdefault("Idempotency-Key", str(uuid.uuid4()))
+            
+        if method != "get" and payload:
+            headers.setdefault("Abs-Signature", util.sign(payload))
 
         if self.api_version is not None:
             headers["Absurdia-Version"] = self.api_version
@@ -284,43 +287,43 @@ class APIRequestor(object):
             raise error.AuthenticationError(
                 "No agent key provided. (HINT: set your agent key using "
                 '"absurdia.agent_token = <AGENT-KEY>"). You can generate agent keys '
-                "from the Absurdia web interface.  See https://app.absurdia.eu/dash/agents "
+                "from the Absurdia web interface.  See https://app.absurdia.markets/dash/agents "
                 "for details, or email support@absurdia.eu if you have any "
                 "questions."
             )
 
         abs_url = "%s%s" % (self.api_base, url)
 
-        encoded_params = urlencode(list(_api_encode(params or {})))
+        #encoded_params = urlencode(list(_api_encode(params or {})))
 
         # Don't use strict form encoding by changing the square bracket control
         # characters back to their literals. This is fine by the server, and
         # makes these parameter strings easier to read.
-        encoded_params = encoded_params.replace("%5B", "[").replace("%5D", "]")
+        #encoded_params = encoded_params.replace("%5B", "[").replace("%5D", "]")
 
-        if method in ["get", "post", "patch", "delete"]:
-            #post_data = encoded_params
+        if method in ["get", "post", "patch", "put", "delete"]:
+            #post_data = encoded_params                
             body = params
         else:
             raise error.APIConnectionError(
                 "Unrecognized HTTP method %r.  This may indicate a bug in the "
-                "Absurdia bindings.  Please contact support@absurdia.eu for "
+                "Absurdia bindings.  Please contact support@absurdia.markets for "
                 "assistance." % (method,)
             )
 
-        headers = self.request_headers(bearer, method)
+        headers = self.request_headers(bearer, method, payload=body)
         if supplied_headers is not None:
             for key, value in supplied_headers:
                 headers[key] = value
 
-        util.log_info("Request to Absurdia api", method=method, path=abs_url)
+        util.log_info("Request to Absurdia API", method=method, path=abs_url)
         util.log_debug(
             "Post details",
             body=body,
             api_version=self.api_version,
         )
         rcontent, rcode, rheaders = self._client.request_with_retries(
-                method, abs_url, headers, body=body, params=encoded_params
+                method, abs_url, headers, body=body
             )
 
         util.log_info("Absurdia API response", path=abs_url, response_code=rcode)
