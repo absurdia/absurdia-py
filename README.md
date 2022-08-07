@@ -55,9 +55,11 @@ order = absurdia.Order.retrieve("<order id>")
 order.cancel(at = absurdia.util.current_timestamp())
 ```
 
-#### Change the path of the credentials file
+## How to load an agent's credentials
 
-You can change the path of the file with:
+#### Option 1 - Change the path of the credentials file
+
+When you create an agent via [your dashboard](https://app.absurdia.markets/dash/agents), you will be able to download a credential file which will contain all the variables for the SDK. Download the file and simply set the path of the file with:
 
 ```python
 import absurdia
@@ -65,9 +67,9 @@ import absurdia
 absurdia.agent_filepath = "/path/to/file/absurdia-agent.env"
 ```
 
-#### Use your credentials directly
+#### Option 2 - Use your credentials directly
 
-Add the credentials the way you prefer by changing the global variables:
+Add the credentials manually in your script the way you prefer by changing the global variables:
 
 ```python
 import absurdia
@@ -76,3 +78,18 @@ absurdia.agent_id = "<ID>"
 absurdia.agent_token = "<Agent Token>"
 absurdia.agent_signature_key = "<Signature Key>"
 ```
+
+#### Option 3 - Use environment variables
+
+The environment variables must be named `ABSURDIA_TOKEN` for the agent's token, `ABSURDIA_SIG_KEY` for the agent's signature key and `ABUSRDIA_AGENT_ID` for the agent's ID. At the start of your script, the SDK will automatically detect those variables and use them as default values.
+
+```bash
+$ export ABSURDIA_TOKEN="<Agent Token>"
+$ export ABSURDIA_SIG_KEY="<Signature Key>"
+```
+
+This method is the preferred method if you run your script in a hosted environment.
+
+## License
+
+Licensed under the BSD 3 license, see [LICENSE](LICENSE).
