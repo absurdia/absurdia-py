@@ -3,11 +3,13 @@ import io
 import logging
 import sys
 import os
-import re
+import psutil
+import platform
 import datetime
 from urllib.parse import quote_plus
 import time, json, base64
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+from pathlib import Path
 
 try:
     pd = __import__("pandas")
@@ -15,6 +17,10 @@ except ImportError:
     pd = None
 
 import absurdia
+
+dirname = os.path.dirname(__file__)
+homedir = str(Path.home())
+saved_agent_path = homedir + "/.absurdia/agent.env"
 
 ABSURDIA_LOG = os.environ.get("ABSURDIA_LOG", default="warn")
 
@@ -331,18 +337,39 @@ def load_agent():
     or absurdia.agent_signature_key is None \
     or absurdia.agent_id is None):
         file = open(absurdia.agent_filepath, "r").read()
-        idx = file.find("ABSURDIA_TOKEN")
-        if idx > -1 and absurdia.agent_token is None:
-            idx = idx + (len("ABSURDIA_TOKEN") + 1)
-            absurdia.agent_token = file[idx:file.find("\n", idx)]
-        idx = file.find("ABSURDIA_SIG_KEY")
-        if idx > -1 and absurdia.agent_signature_key is None:
-            idx = idx + (len("ABSURDIA_SIG_KEY") + 1)
-            absurdia.agent_signature_key = file[idx:file.find("\n", idx)]
-        idx = file.find("ABSURDIA_AGENT_ID")
-        if idx > -1 and absurdia.agent_id is None:
-            idx = idx + (len("ABSURDIA_AGENT_ID") + 1)
-            absurdia.agent_id = file[idx:file.find("\n", idx)]
+        load_agent_from_filecontent(file)
+    if os.path.exists(saved_agent_path) \
+    and (absurdia.agent_token is None \
+    or absurdia.agent_signature_key is None \
+    or absurdia.agent_id is None):
+        file = open(saved_agent_path, "r").read()
+        load_agent_from_filecontent(file)
+
+def _save_agent():
+    if absurdia.agent_token is not None:
+        home_agent_file = open(saved_agent_path, "w+")
+        home_agent_file.write('\n'.join([
+            "ABSURDIA_TOKEN=" + absurdia.agent_token,
+            "ABSURDIA_SIG_KEY=" + absurdia.agent_signature_key if absurdia.agent_signature_key else "",
+            "ABUSRDIA_AGENT_ID=" + absurdia.agent_id if absurdia.agent_id else ""
+        ]))
+        home_agent_file.close()
+
+def load_agent_from_filecontent(content: str, save=False):
+    idx = content.find("ABSURDIA_TOKEN")
+    if idx > -1 and absurdia.agent_token is None:
+        idx = idx + (len("ABSURDIA_TOKEN") + 1)
+        absurdia.agent_token = content[idx:content.find("\n", idx)]
+    idx = content.find("ABSURDIA_SIG_KEY")
+    if idx > -1 and absurdia.agent_signature_key is None:
+        idx = idx + (len("ABSURDIA_SIG_KEY") + 1)
+        absurdia.agent_signature_key = content[idx:content.find("\n", idx)]
+    idx = content.find("ABSURDIA_AGENT_ID")
+    if idx > -1 and absurdia.agent_id is None:
+        idx = idx + (len("ABSURDIA_AGENT_ID") + 1)
+        absurdia.agent_id = content[idx:content.find("\n", idx)]
+    if save and absurdia.agent_token:
+        _save_agent()
 
 dump = lambda payload: json.dumps(payload, separators=(',', ':')) if len(payload) else ""
 
@@ -508,3 +535,20 @@ def compose_symbol(base: str, quote: str, market_type: str, venue: str) -> str:
         return "{base}.{quote}:{venue}".format(base, quote, venue)
     elif market_type == "FUTURE": # only perpetual futures supported at the moment
         return "{base}.{quote}:{venue}.PERP".format(base, quote, venue)
+    
+def get_host_info() -> dict:
+    return {
+        "absurdia_pkg_version": absurdia.__version__,
+        "absurdia_pkg_lang": "python",
+        "python_version":  sys.version,
+        "hostname": platform.node(),
+        "os": platform.system(),
+        "arch": platform.machine(),
+        "platform_version": platform.version(),
+        "cpu": {
+            "physical_cores": psutil.cpu_count(logical=False),
+            "logical_cores": psutil.cpu_count(logical=True),
+            "max_freq_mhz": psutil.cpu_freq().max
+        },
+        "memory_total": psutil.virtual_memory().total
+    }

@@ -1,3 +1,8 @@
+
+## [0.0.5] - 2022-09-02
+
+- Added CLI application to import Freqtrade backtests.
+
 ## [0.0.4] - 2022-08-06
 
 ### Added

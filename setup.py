@@ -30,10 +30,19 @@ setup(
     package_data={"absurdia": ["data/ca-certificates.crt"]},
     zip_safe=True,
     install_requires=[
+        'click',
+        'pydantic',
         'brotlipy',
+        'psutil',
+        "colorama",
         'httpx[http2] >= 0.21.2; python_version >= "3.4"',
     ],
-    python_requires=">=3.4, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*",
+    python_requires=">=3.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*",
+    entry_points={
+        "console_scripts": [
+            "absurdia = absurdia.cli:cli"
+        ]
+    },
     project_urls={
         "Bug Tracker": "https://github.com/absurdia/absurdia-py/issues",
         "Changes": "https://github.com/absurdia/absurdia-py/blob/master/CHANGELOG.md",

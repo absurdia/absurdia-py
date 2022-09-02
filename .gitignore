@@ -192,3 +192,5 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
+
+.ruff_cache/
