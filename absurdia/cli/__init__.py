@@ -2,9 +2,8 @@ import os
 import absurdia
 import click
 
-from click import echo, secho
+from click import secho
 
-from .common import client
 from .importers import _import
 
 os.environ['ABSURDIA_BACKTEST'] = '1'
@@ -38,7 +37,7 @@ def login(save, file, token, sig_key):
     
     if token:
         os.environ['ABSURDIA_TOKEN'] = token
-        absurdia.agent_token = token
+        absurdia.token = token
         if sig_key:
             os.environ['ABSURDIA_SIG_KEY'] = sig_key
             absurdia.agent_signature_key = sig_key        
@@ -46,17 +45,19 @@ def login(save, file, token, sig_key):
         absurdia.util.load_agent_from_filecontent(file.read())
     
     # Test we can get the agent's data
-    agent_resp = client.get("/v1/agents/{}".format(absurdia.agent_token), headers={
-        "Authorization": "Bearer {}".format(absurdia.agent_token)
-    })
-    if agent_resp.is_success:
-        agent = agent_resp.json()['data']
-        secho("Successfully logged agent {} in.".format(agent['name']), fg='green')
+    client = absurdia.Client(absurdia.token)
+
+    response = client.agents.current()
+    if response:
+        secho("Successfully logged agent {} in.".format(response['name']), fg='green')
         if save:
             absurdia.util._save_agent()
     else:
-        secho("Failed to log in with given credentials. API Response: {}".format(agent_resp.text), fg='red')
-        
+        secho(
+            "Failed to log in with given credentials. API Response: %s" % (response), 
+            fg='red'
+        )
+
 
 cli.add_command(login)
 cli.add_command(_import)

@@ -1,35 +1,32 @@
-import imp
-import os
-
 # Absurdia Python bindings
+
+from absurdia.resources import *  # noqa
+from absurdia.version import VERSION
+from absurdia.clients import Client
+from absurdia.agent_credentials import (
+    token, 
+    agent_filepath, 
+    agent_id, 
+    agent_signature_key
+)
+
+__all__ = [
+    Client,
+    token,
+    agent_filepath,
+    agent_id,
+    agent_signature_key
+]
 
 # Configuration variables
 
-agent_filepath = "absurdia-agent.env"
-agent_id = None
-agent_token = None
-agent_signature_key = None
-default_fund = None
-api_base = "https://api.absurdia.markets"
-download_api_base = "https://data.absurdia.markets"
-api_version = "v1"
-verify_ssl_certs = True
-proxy = None
 default_http_client = None
 app_info = None
 enable_telemetry = True
-max_network_retries = 0
-ca_bundle_path = os.path.join(
-    os.path.dirname(__file__), "data", "ca-certificates.crt"
-)
+max_network_retries = 5
 
-# Set to either 'debug' or 'info', controls console logging
-log = None
-
-# API resources
-from absurdia.api_resources import *  # noqa
-from absurdia.markets import *  # noqa
-from absurdia.version import VERSION
+# Set to either 'WARNING', 'INFO', 'DEBUG'
+log = 'WARNING'
 
 __version__ = VERSION
 

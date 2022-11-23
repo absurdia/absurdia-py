@@ -60,3 +60,15 @@ def bundle_results(exportpath: str, configpath: str) -> dict:
                     result["data"] = exported
     
     return result
+
+def read_results(exportpath: str, configpath: str) -> dict:
+    result = None
+    for file in os.listdir("."):
+        if file.startswith(exportpath):
+            if file.endswith(".meta.json"):
+                continue
+            elif file.endswith(".json"):
+                with open(file, "r") as f:
+                    exported = json.load(f)
+                    result = exported
+    return result

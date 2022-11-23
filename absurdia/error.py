@@ -1,4 +1,3 @@
-import absurdia
 
 class AbsurdiaError(Exception):
     def __init__(
@@ -37,9 +36,7 @@ class AbsurdiaError(Exception):
             return msg
 
     # Returns the underlying `Exception` (base class) message, which is usually
-    # the raw message returned by Absurdia's API. This was previously available
-    # in python2 via `error.message`. Unlike `str(error)`, it omits "Request
-    # req_..." from the beginning of the string.
+    # the raw message returned by Absurdia's API.
     @property
     def user_message(self):
         return self._message
@@ -115,9 +112,41 @@ class AuthenticationError(AbsurdiaError):
     pass
 
 
-class PermissionError(AbsurdiaError):
+class AuthorisationError(AbsurdiaError):
+    def __init__(
+        self,
+        code,
+        description,
+        http_body=None,
+        http_status=None,
+        json_body=None,
+        headers=None,
+    ):
+        super(AuthorisationError, self).__init__(
+            description, http_body, http_status, json_body, headers, code
+        )
+
+class InvalidGrantError(AuthorisationError):
     pass
 
+
+class InvalidRequestError(AuthorisationError):
+    pass
+
+
+class UnverifiedAccount(AuthorisationError):
+    pass
+
+
+class SignatureRequired(AuthorisationError):
+    pass
+
+
+class InvalidSignature(AuthorisationError):
+    pass
+
+class SystemError(AuthorisationError):
+    pass
 
 class RateLimitError(AbsurdiaError):
     pass

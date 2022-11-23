@@ -3,36 +3,30 @@ import absurdia
 import click
 
 from click import secho, echo
-from absurdia.cli.common import client, check_login
-from .freqtrade import bundle_results, transform_cmd
+from absurdia.cli.common import check_login
+from .freqtrade import read_results, transform_cmd
 
-def upload_results(exportpath: str, configpath: str, name: str = None, cli_command: str = None):
-    bundle = bundle_results(exportpath, configpath)
-    bundle["host"] = absurdia.util.get_host_info()
-    if cli_command:
-        bundle["cli_command"] = cli_command
-    if name:
-        bundle["name"] = name
-    response = client.post("/v1/strategies/import", 
-        json=bundle,
-        headers={
-            "Authorization": "Bearer {}".format(absurdia.agent_token),
-            "Accept-encoding": "gzip,br",
-            "Content-Type": "application/json"
-        }
-    )
-    if response.is_success:
+def upload_freqtrade_results(exportpath: str, 
+                             configpath: str, 
+                             name: str = None, 
+                             cli_command: str = None):
+    """Uploads Freqtrade results to Absurdia"""
+
+    data = read_results(exportpath, configpath)
+    client = absurdia.Client(agent=absurdia.token)
+    
+    try:
+        backtest = client.backtests.import_freqtrade(data, name, cli_command)
         secho("Successfully imported!", fg='green')
-        response_data = response.json()["data"]
-        bid = response_data["id"]
-        sid = response_data["strategy_id"]
+        bid = backtest["id"]
+        sid = backtest["strategy_id"]
         # Show page where the backtest is available
         echo("""The results are available at: 
-             https://app.absurdia.markets/dash/backtesting/strategies/{}/backtests/{}
+             https://app.absurdia.markets/backtesting/strategies/{}/backtests/{}
              """.format(sid, bid)
-            )
-    else:
-        secho("Failed to import bundled results: " + response.text, fg="red", err=True)
+        )
+    except Exception as e:
+        secho("Failed to upload backtest. %s" % (e,), fg="red", err=True)
 
 @click.command(name="import", context_settings={"ignore_unknown_options": True})
 @click.option('-n', '--name', type=str, 
@@ -61,13 +55,21 @@ def _import(name, freqtrade, adapter, params, data, command):
         fin = transform_cmd(cmd)
         process = subprocess.Popen(fin["command"])
         process.wait()
-        upload_results(fin["exportpath"], fin["configpath"], name=name, cli_command=" ".join(cmd))
-
+        upload_freqtrade_results(
+            fin["exportpath"], 
+            fin["configpath"], 
+            name=name, 
+            cli_command=" ".join(cmd)
+        )
     elif adapter == 'freqtrade':
         if not data:
-            secho("Invalid import command. Missing a `--data` argument.", fg='red', err=True)
+            secho(
+                "Invalid import command. Missing a `--data` argument.", 
+                fg='red', 
+                err=True
+            )
             return
         else:
-            upload_results(data, params)
+            upload_freqtrade_results(data, params)
     else:
         echo(click.style("Invalid import command.", fg='red'), err=True)
