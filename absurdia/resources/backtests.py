@@ -20,10 +20,11 @@ class BacktestsRequestor(ResourceRequestor):
     
     def create(
             self, 
-            strategy_id: str,
             start_date: int,
             end_date: int,
             timeframe: str,
+            strategy_id: str = None,
+            strategy_name: str = None,
             name: str = None,
             description: str = None, 
             metadata: dict = None,
@@ -39,8 +40,7 @@ class BacktestsRequestor(ResourceRequestor):
             framework_name: str = None,
             framework_version: str = None
         ):
-        data = { 
-            "strategy_id": strategy_id,
+        data = {
             "start_date": start_date,
             "end_date": end_date,
             "timeframe": timeframe,
@@ -48,6 +48,12 @@ class BacktestsRequestor(ResourceRequestor):
             "is_public": is_public,
             "host": get_host_info()
         }
+        if strategy_id is None and strategy_name is None:
+            raise ValueError("Either `strategy_id` or `strategy_name` must be provided.")
+        if strategy_id:
+            data["strategy_id"] = strategy_id
+        if strategy_name:
+            data["strategy_name"] = strategy_name
         if name: data["name"] = name
         if description: data["description"] = description
         if metadata: data["metadata"] = metadata
@@ -135,4 +141,11 @@ class Backtest(AbsurdiaObject):
         if not response.ok:
             raise APIError(response.text, response.status_code, response.headers)
         self.__init__(self, response)
+        
+    def positions(self):
+        url = "%s/%s/positions" % (self.base_path, self.id)
+        response = self._client.request("GET", url)
+        if not response.ok:
+            raise APIError(response.text, response.status_code, response.headers)
+        return response.json["data"]
     
