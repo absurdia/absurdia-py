@@ -16,6 +16,14 @@ class StrategiesRequestor(ResourceRequestor):
         else:
             return Strategy(response)
         
+    def create(self, name: str, description: str = None, metadata: dict = None):
+        data = { "name": name }
+        if description: data["description"] = description
+        if metadata: data["metadata"] = metadata
+
+        response = self._client.request("POST", self.base_path, data=data)
+        return self.from_response(response)
+        
 class StrategiesList(AbsurdiaObjectsList):
     def __init__(self, response: APIResponse):
         super().__init__(objects=response.json["data"], response=response)

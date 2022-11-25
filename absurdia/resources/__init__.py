@@ -1,3 +1,4 @@
+from absurdia.api_error import APIError
 from absurdia.clients import Client
 
 class ResourceRequestor:
@@ -13,6 +14,8 @@ class ResourceRequestor:
         response = self._client.request(
             "GET", path, params=params, additional_headers=additional_headers
         )
+        if not response.ok:
+            raise APIError(response.text, response.status_code, response.headers)
         return self.from_response(response)
     
     def list(self, params: dict = { "limit": 100 }, additional_headers: dict = {}):
@@ -23,13 +26,18 @@ class ResourceRequestor:
         response = self._client.request(
             "GET", self.base_path, params=params, additional_headers=additional_headers
         )
+        if not response.ok:
+            raise APIError(response.text, response.status_code, response.headers)
         return self.from_response(response, is_list=True)
 
     def create(self, data: dict = {}, additional_headers: dict = {}, timeout=5000):
-        return self._client.request(
+        response = self._client.request(
             "POST", self.base_path, data=data, 
             additional_headers=additional_headers, timeout=timeout
         )
+        if not response.ok:
+            raise APIError(response.text, response.status_code, response.headers)
+        return self.from_response(response)
     
     def update(self, 
                id:str, 
@@ -37,11 +45,17 @@ class ResourceRequestor:
                additional_headers: dict = {}, 
                timeout=5000):
         path = "%s/%s" % (self.base_path, id)
-        return self._client.request(
+        response = self._client.request(
             "PATCH", path, data=data, 
             additional_headers=additional_headers, timeout=timeout
         )
+        if not response.ok:
+            raise APIError(response.text, response.status_code, response.headers)
+        return self.from_response(response)
+
         
     def delete(self, id: str):
         path = "%s/%s" % (self.base_path, id)
-        return self._client.request("DELETE", path)
+        response = self._client.request("DELETE", path)
+        if not response.ok:
+            raise APIError(response.text, response.status_code, response.headers)
