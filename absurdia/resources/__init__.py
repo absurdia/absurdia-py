@@ -17,8 +17,8 @@ class ResourceRequestor:
     
     def list(self, params: dict = { "limit": 100 }, additional_headers: dict = {}):
         if params.get("limit"):
-            if params["limit"] > 1000:
-                raise ValueError("Limit is too large. Its maximum value is 1000.")
+            if params["limit"] > 10000:
+                raise ValueError("Limit is too large. Its maximum value is 10000.")
 
         response = self._client.request(
             "GET", self.base_path, params=params, additional_headers=additional_headers

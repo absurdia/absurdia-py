@@ -3,14 +3,14 @@
 
 A Python library for Absurdia's API.
 
-## Setup
+## Install
 
 You can install this package by using the pip tool and installing:
 
     $ pip install absurdia
 
 
-## Setting up an Absurdia account
+## Signing up to Absurdia backtesting
 
 Sign up for Absurdia at https://app.absurdia.markets/signup.
 
@@ -30,6 +30,20 @@ account = client.accounts.current()
 ```
 
 Alternatively, use the environment variable `ABSURDIA_TOKEN`, or put the credential file in the same directory as your Python script.
+
+## Import a Freqtrade backtest
+
+Freqtrade backtests are run using its CLI. This Python library also comes with a CLI that can work together with Freqtrade's commands. First, add a token to authenticate your agent:
+
+```shell
+$ absurdia login --token '<Your Agent Token>'
+```
+
+Once authenicated, simply append `absurdia backtest --` to your Freqtrade backtesting command. For example:
+
+```shell
+$ absurdia backtest --freqtrade backtesting --strategy AwesomeStrategy --timeframe 1m
+```
 
 ## License
 

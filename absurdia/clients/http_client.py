@@ -26,7 +26,7 @@ class HttpClient():
         Constructor for the HttpClient
         :param bool pool_connections
         :param request_hooks
-        :param int timeout: Timeout for the requests.
+        :param int timeout: Timeout for the requests, in milliseconds.
                             Timeout should never be zero (0) or less.
         :param logger
         :param dict proxy: Http proxy for the requests session
@@ -42,7 +42,7 @@ class HttpClient():
         self.request_hooks = request_hooks or hooks.default_hooks()
 
         if timeout is not None and timeout <= 0:
-            raise ValueError(timeout)
+            raise ValueError("Timeout should never be zero (0) or less.")
         self.timeout = timeout
         self.proxy = proxy if proxy else {}
         

@@ -1,4 +1,5 @@
 from absurdia.absurdia_object import AbsurdiaObject, AbsurdiaObjectsList
+from absurdia.api_error import APIError
 from absurdia.api_response import APIResponse
 from absurdia.resources import ResourceRequestor
 
@@ -16,11 +17,8 @@ class AccountsRequestor(ResourceRequestor):
         return "/v1/accounts"
     
     def from_response(self, response: APIResponse, is_list: bool = False):
-        if response.status_code >= 300:
-            raise ValueError(
-                "Invalid response. The response status code is %s" 
-                % (response.status_code,)
-            )
+        if not response.ok:
+            raise APIError(response.text, response.status_code, response.headers)
         if is_list:
             return AccountsList(response=response)
         else:

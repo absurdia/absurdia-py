@@ -2,7 +2,7 @@ import platform
 import json
 from absurdia.clients.http_client import HttpClient
 from absurdia.util import load_agent
-from absurdia.error import AuthenticationError
+from absurdia.api_error import AuthenticationError
 from absurdia.version import VERSION
 from absurdia.agent_credentials import token
 
