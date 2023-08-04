@@ -35,7 +35,7 @@ setup(
         "colorama",
         "requests"
     ],
-    python_requires=">=3.4, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*",
+    python_requires=">=3.4",
     entry_points={
         "console_scripts": [
             "absurdia = absurdia.cli:cli"
